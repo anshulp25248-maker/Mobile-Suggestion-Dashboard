@@ -61,16 +61,17 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. DYNAMIC MODEL DISCOVERY ENGINE
+# 2. DYNAMIC MODEL DISCOVERY ENGINE (OPTIMIZED FOR QUOTA)
 # ==============================================================================
 def get_best_available_model(client):
     """
-    Queries the API to find all available models and selects the best one 
-    based on a priority hierarchy.
+    Prioritizes FLASH over PRO to avoid 429 Resource Exhausted errors 
+    on Free Tier accounts.
     """
     try:
         available_models = client.models.list()
-        hierarchy = ["pro", "flash", "gemini-1.0"] 
+        # CHANGED: 'flash' now comes first to ensure maximum uptime and speed.
+        hierarchy = ["flash", "pro", "gemini-1.0"] 
         model_names = [m.name for m in available_models]
         
         for pref in hierarchy:
@@ -85,7 +86,6 @@ def get_best_available_model(client):
 # ==============================================================================
 # 3. AI CONFIGURATION (SECURE)
 # ==============================================================================
-# We use st.secrets to keep your API Key private and safe from GitHub bots.
 try:
     client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 except Exception as e:
@@ -134,7 +134,7 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. AI ANALYSIS ENGINE
+# 5. AI ANALYSIS ENGINE (ROBUST)
 # ==============================================================================
 if run_button:
     with st.spinner("Connecting to AI Brain..."):
@@ -173,4 +173,7 @@ if run_button:
                     st.markdown(response.text)
                     st.markdown('</div>', unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"Generation Error: {e}")
+                    if "429" in str(e):
+                        st.error("🚀 **Quota Limit Reached!** \n\nYou've sent too many requests. Please wait about 60 seconds and click the button again.")
+                    else:
+                        st.error(f"Generation Error: {e}")
