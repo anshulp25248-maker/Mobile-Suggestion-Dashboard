@@ -94,7 +94,7 @@ def get_best_available_model(client):
 # 3. AI CONFIGURATION
 # ==============================================================================
 # Replace with your actual API key
-client = genai.Client(api_key="AIzaSyDS3qEHUa-myz_GMnhWzbPVyUTuAcFbEc4")
+client = genai.Client(api_key="GEMINI_API_KEY")
 
 # ==============================================================================
 # 4. DASHBOARD UI LOGIC
