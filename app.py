@@ -69,32 +69,28 @@ def get_best_available_model(client):
     based on a priority hierarchy.
     """
     try:
-        # Get list of all models available for this API key
         available_models = client.models.list()
-        
-        # Define intelligence hierarchy (Highest to Lowest)
-        # We search for these keywords in the model names
         hierarchy = ["pro", "flash", "gemini-1.0"] 
-        
         model_names = [m.name for m in available_models]
         
-        # 1. Try to find any 'Pro' model first
         for pref in hierarchy:
             for name in model_names:
-                if pref in name.lower() and "generateContent" in name: # basic check
+                if pref in name.lower(): 
                     return name
-        
-        # Fallback: return the first available model if no hierarchy match
         return model_names[0] if model_names else None
     except Exception as e:
         st.error(f"Discovery Engine Error: {e}")
         return None
 
 # ==============================================================================
-# 3. AI CONFIGURATION
+# 3. AI CONFIGURATION (SECURE)
 # ==============================================================================
-# Replace with your actual API key
-client = genai.Client(api_key="GEMINI_API_KEY")
+# We use st.secrets to keep your API Key private and safe from GitHub bots.
+try:
+    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+except Exception as e:
+    st.error("🔑 API Key missing! Please add 'GEMINI_API_KEY' to your Streamlit Secrets vault.")
+    st.stop()
 
 # ==============================================================================
 # 4. DASHBOARD UI LOGIC
@@ -138,11 +134,10 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. AI ANALYSIS ENGINE (DYNAMIC)
+# 5. AI ANALYSIS ENGINE
 # ==============================================================================
 if run_button:
-    with st.spinner("Scanning API for best available model..."):
-        # STEP 1: Dynamically find the best model for this API key
+    with st.spinner("Connecting to AI Brain..."):
         best_model = get_best_available_model(client)
         
         if not best_model:
